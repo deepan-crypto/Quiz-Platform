@@ -116,65 +116,57 @@ export function AuthForm({ onAuth, selectedRole }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl"></div>
-      </div>
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      {/* Content starts directly without overlay */}
 
       <div className="w-full max-w-5xl relative animate-fade-in-up">
         {/* Main Container - Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Left Side - College Info & Logo */}
-          <div className="hidden lg:flex lg:flex-col bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 p-12 justify-between text-white relative overflow-hidden">
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
-            
+          <div className="hidden lg:flex lg:flex-col bg-blue-600 p-12 justify-between text-white relative overflow-hidden">
             <div className="relative z-10">
               {/* College Logo & Name */}
               <div className="mb-12">
-                <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center mb-6 border border-white/20">
+                <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-6 border border-white/30">
                   <BookOpen className="w-10 h-10 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold mb-2">Sri Eshwar College of Engineering</h2>
-                <p className="text-blue-200 text-sm">Quiz & Assessment Platform</p>
+                <p className="text-blue-100 text-sm">Quiz & Assessment Platform</p>
               </div>
 
               {/* Features */}
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-blue-400/20 border border-blue-300/30">
-                      <BookOpen className="h-4 w-4 text-blue-300" />
+                    <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/20 border border-white/30">
+                      <BookOpen className="h-4 w-4 text-white" />
                     </div>
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold">Comprehensive Quizzes</h3>
-                    <p className="text-xs text-blue-200 mt-1">Create and manage quizzes with ease</p>
+                    <p className="text-xs text-blue-100 mt-1">Create and manage quizzes with ease</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-blue-400/20 border border-blue-300/30">
-                      <User className="h-4 w-4 text-blue-300" />
+                    <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/20 border border-white/30">
+                      <User className="h-4 w-4 text-white" />
                     </div>
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold">Student Management</h3>
-                    <p className="text-xs text-blue-200 mt-1">Track student performance and results</p>
+                    <p className="text-xs text-blue-100 mt-1">Track student performance and results</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-blue-400/20 border border-blue-300/30">
-                      <Lock className="h-4 w-4 text-blue-300" />
+                    <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/20 border border-white/30">
+                      <Lock className="h-4 w-4 text-white" />
                     </div>
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold">Secure Platform</h3>
-                    <p className="text-xs text-blue-200 mt-1">Your data is protected and secure</p>
+                    <p className="text-xs text-blue-100 mt-1">Your data is protected and secure</p>
                   </div>
                 </div>
               </div>
@@ -182,7 +174,7 @@ export function AuthForm({ onAuth, selectedRole }) {
 
             {/* Bottom branding */}
             <div className="relative z-10">
-              <p className="text-xs text-blue-300 opacity-75">Trusted by educators and students</p>
+              <p className="text-xs text-white/75">Trusted by educators and students</p>
             </div>
           </div>
 
