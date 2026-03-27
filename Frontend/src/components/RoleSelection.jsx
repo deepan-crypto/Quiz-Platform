@@ -3,33 +3,26 @@ import { Shield, Users, BookOpen, Settings } from 'lucide-react';
 
 export function RoleSelection({ onRoleSelect, userName }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl"></div>
-      </div>
+    <div className="min-h-screen bg-white flex items-center justify-center p-4">
+      {/* Content starts directly without overlay */}
 
       <div className="w-full max-w-5xl relative">
         <div className="rounded-2xl shadow-2xl overflow-hidden">
           {/* Header - College Themed */}
-          <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-slate-900 px-8 py-12 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
-            
+          <div className="bg-blue-600 px-8 py-12 text-white relative overflow-hidden">
             <div className="relative z-10 max-w-3xl mx-auto">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20">
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/30">
                   <BookOpen className="w-8 h-8 text-white" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold">Sri Eshwar College of Engineering</h2>
-                  <p className="text-blue-200 text-sm">Quiz & Assessment Platform</p>
+                  <p className="text-blue-100 text-sm">Quiz & Assessment Platform</p>
                 </div>
               </div>
               
               <h1 className="text-4xl font-bold mb-2">Welcome, {userName}!</h1>
-              <p className="text-blue-100 text-lg">Select your role to continue</p>
+              <p className="text-blue-50 text-lg">Select your role to continue</p>
             </div>
           </div>
 
