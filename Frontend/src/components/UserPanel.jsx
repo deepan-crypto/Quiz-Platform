@@ -24,20 +24,32 @@ export function UserPanel({ quizzes, onLogout, user }) {
   }, [user]);
 
   const fetchUserQuizHistory = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.warn('UserPanel: user.id is not available', user);
+      return;
+    }
 
     setLoadingHistory(true);
+    console.log('UserPanel: Fetching quiz history for user ID:', user.id);
     try {
-      const response = await fetch(`http://localhost:3001/api/quiz/user-results/${user.id}`);
+      const url = `http://localhost:3001/api/quiz/user-results/${user.id}`;
+      console.log('UserPanel: Making request to:', url);
+      const response = await fetch(url);
+      console.log('UserPanel: Response status:', response.status);
+      
       const data = await response.json();
+      console.log('UserPanel: Response data:', data);
 
       if (data.success) {
-        setUserQuizHistory(data.results);
+        console.log('UserPanel: Setting user quiz history with', data.results?.length || 0, 'results');
+        setUserQuizHistory(data.results || []);
       } else {
-        console.error('Error fetching user quiz history:', data.error);
+        console.error('UserPanel: Error in API response:', data.error);
+        setUserQuizHistory([]);
       }
     } catch (error) {
-      console.error('Error fetching user quiz history:', error);
+      console.error('UserPanel: Error fetching user quiz history:', error);
+      setUserQuizHistory([]);
     } finally {
       setLoadingHistory(false);
     }
