@@ -232,38 +232,38 @@ export function UserPanel({ quizzes, onLogout, user }) {
   // Quiz Code Entry Screen
   if (!currentQuiz) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         <div className="container mx-auto px-4 py-8">
-          <div className="flex justify-between items-center mb-8">
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-gray-800 mb-2">User Dashboard</h1>
-              <p className="text-gray-600">Welcome {user?.name}! Join quizzes or view your history</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm text-gray-600">Logged in as</p>
-                <p className="font-semibold text-gray-800">{user?.name}</p>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-white" />
+                </div>
+                <h1 className="text-3xl font-bold text-white">Sri Eshwar College</h1>
               </div>
-              <button
-                onClick={onLogout}
-                className="flex items-center gap-2 px-6 py-3 bg-red-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover:bg-red-600"
-              >
-                <LogOut className="w-5 h-5" />
-                Logout
-              </button>
+              <p className="text-blue-200 ml-15">Welcome back, <span className="font-semibold">{user?.name}</span>! Join quizzes and track your progress</p>
             </div>
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg shadow-lg hover:shadow-xl hover:bg-red-700 transition-all duration-300"
+            >
+              <LogOut className="w-5 h-5" />
+              Logout
+            </button>
           </div>
 
           {/* Tab Navigation */}
           <div className="max-w-4xl mx-auto mb-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-2 border border-white/20">
-              <div className="flex">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl shadow-xl p-1 border border-white/20">
+              <div className="flex gap-1">
                 <button
                   onClick={() => setActiveTab('join')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-medium transition-all duration-300 ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-300 ${
                     activeTab === 'join'
-                      ? 'bg-purple-600 text-white shadow-lg'
-                      : 'text-gray-600 hover:bg-purple-50'
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                      : 'text-blue-100 hover:bg-white/10'
                   }`}
                 >
                   <BookOpen className="w-5 h-5" />
@@ -271,10 +271,10 @@ export function UserPanel({ quizzes, onLogout, user }) {
                 </button>
                 <button
                   onClick={() => setActiveTab('history')}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-medium transition-all duration-300 ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-300 ${
                     activeTab === 'history'
-                      ? 'bg-purple-600 text-white shadow-lg'
-                      : 'text-gray-600 hover:bg-purple-50'
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
+                      : 'text-blue-100 hover:bg-white/10'
                   }`}
                 >
                   <History className="w-5 h-5" />
@@ -286,21 +286,18 @@ export function UserPanel({ quizzes, onLogout, user }) {
 
           <div className="max-w-4xl mx-auto">
             {activeTab === 'join' ? (
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
+              <div className="bg-white/95 rounded-xl shadow-2xl p-8">
                 <div className="text-center mb-8">
-                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <Trophy className="w-8 h-8 text-white" />
                   </div>
-                  <h2 className="text-2xl font-semibold text-gray-800 mb-2">Join Quiz</h2>
-                  <p className="text-gray-600">Enter the quiz code provided by your instructor</p>
-                  {user?.name && (
-                    <p className="text-sm text-gray-500 mt-2">Logged in as: <span className="font-medium">{user.name}</span></p>
-                  )}
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Join Quiz</h2>
+                  <p className="text-gray-600">Enter the 6-digit code provided by your instructor to begin</p>
                 </div>
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">
                       Quiz Code
                     </label>
                     <input
@@ -311,7 +308,7 @@ export function UserPanel({ quizzes, onLogout, user }) {
                         setError('');
                       }}
                       placeholder="Enter 6-digit code"
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white/50 text-center text-lg font-mono tracking-widest ${
+                      className={`w-full px-6 py-4 border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 bg-gray-50 text-center text-xl font-mono tracking-widest font-semibold ${
                         loading ? 'opacity-50 cursor-not-allowed' : ''
                       }`}
                       maxLength={6}
@@ -320,8 +317,8 @@ export function UserPanel({ quizzes, onLogout, user }) {
                   </div>
 
                   {error && (
-                    <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-xl">
-                      <XCircle className="w-5 h-5 text-red-500" />
+                    <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
                       <p className="text-red-700 text-sm">{error}</p>
                     </div>
                   )}
@@ -330,9 +327,9 @@ export function UserPanel({ quizzes, onLogout, user }) {
                     <button
                       onClick={handleJoinQuiz}
                       disabled={quizCode.length !== 6 || loading}
-                      className={`w-full py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 ${
+                      className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 shadow-lg ${
                         quizCode.length === 6 && !loading
-                          ? 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-lg hover:-translate-y-1'
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 hover:shadow-xl'
                           : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       }`}
                     >
@@ -353,18 +350,18 @@ export function UserPanel({ quizzes, onLogout, user }) {
               </div>
             ) : (
               /* Quiz History Tab */
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
+              <div className="bg-white/95 rounded-xl shadow-2xl p-8">
                 <div className="text-center mb-8">
-                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                     <History className="w-8 h-8 text-white" />
                   </div>
-                  <h2 className="text-2xl font-semibold text-gray-800 mb-2">Quiz History</h2>
-                  <p className="text-gray-600">View all the quizzes you've completed</p>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Quiz History</h2>
+                  <p className="text-gray-600">View all quizzes you've completed and your performance</p>
                 </div>
 
                 {loadingHistory ? (
                   <div className="text-center py-12">
-                    <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-gray-600">Loading your quiz history...</p>
                   </div>
                 ) : userQuizHistory.length === 0 ? (
@@ -377,20 +374,20 @@ export function UserPanel({ quizzes, onLogout, user }) {
                   <div className="space-y-4">
                     {/* Summary Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                      <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4">
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-5 border border-blue-200">
                         <div className="flex items-center gap-3">
                           <Award className="w-8 h-8 text-blue-600" />
                           <div>
-                            <p className="text-sm text-gray-600">Total Quizzes</p>
+                            <p className="text-xs text-gray-600 font-medium">Total Quizzes</p>
                             <p className="text-2xl font-bold text-blue-700">{userQuizHistory.length}</p>
                           </div>
                         </div>
                       </div>
-                      <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4">
+                      <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-5 border border-green-200">
                         <div className="flex items-center gap-3">
                           <Trophy className="w-8 h-8 text-green-600" />
                           <div>
-                            <p className="text-sm text-gray-600">Average Score</p>
+                            <p className="text-xs text-gray-600 font-medium">Average Score</p>
                             <p className="text-2xl font-bold text-green-700">
                               {userQuizHistory.length > 0
                                 ? Math.round(userQuizHistory.reduce((sum, quiz) => sum + ((quiz.score / quiz.totalQuestions) * 100), 0) / userQuizHistory.length)
