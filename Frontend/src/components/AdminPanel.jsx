@@ -258,38 +258,37 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user?.name}! Create and manage your quizzes</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm text-gray-600">Logged in as</p>
-              <p className="font-semibold text-gray-800">{user?.name}</p>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                <BookOpen className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-white">Quiz Management</h1>
             </div>
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-2 px-6 py-3 bg-red-500 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover:bg-red-600"
-            >
-              <LogOut className="w-5 h-5" />
-              Logout
-            </button>
+            <p className="text-blue-200">Welcome back, <span className="font-semibold">{user?.name}</span>! Create and manage your quizzes</p>
           </div>
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg shadow-lg hover:shadow-xl hover:bg-red-700 transition-all duration-300"
+          >
+            <LogOut className="w-5 h-5" />
+            Logout
+          </button>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8 border border-white/20">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center gap-3">
+        <div className="bg-white/95 rounded-xl shadow-2xl p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3">
             <Plus className="w-7 h-7 text-blue-600" />
             Create New Quiz
           </h2>
           
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Enter Topic
               </label>
               <input
@@ -297,12 +296,12 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
                 value={topicInput}
                 onChange={(e) => setTopicInput(e.target.value)}
                 placeholder="Enter topic name"
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white focus:bg-white"
               />
             </div>
             
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Number of Questions
               </label>
               <input
@@ -310,7 +309,7 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
                 value={numberOfQuestions}
                 onChange={(e) => setNumberOfQuestions(Number(e.target.value))}
                 min="1"
-                className="w-20 px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
+                className="w-20 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white focus:bg-white"
               />
             </div>
             
@@ -318,8 +317,8 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
               <button
                 onClick={handleCreateQuiz}
                 disabled={isCreating || !topicInput}
-                className={`px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${
-                  isCreating || !topicInput ? 'opacity-50 cursor-not-allowed' : 'hover:from-blue-700 hover:to-purple-700'
+                className={`px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 font-semibold ${
+                  isCreating || !topicInput ? 'opacity-50 cursor-not-allowed' : 'hover:from-blue-700 hover:to-blue-800'
                 }`}
               >
                 {isCreating ? (
@@ -339,8 +338,8 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
         </div>
 
         {/* Created Quizzes */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 border border-white/20">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Created Quizzes</h2>
+        <div className="bg-white/95 rounded-xl shadow-2xl p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Created Quizzes</h2>
           
           {quizzes.length === 0 ? (
             <div className="text-center py-12">
