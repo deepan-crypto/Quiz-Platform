@@ -44,10 +44,23 @@ class QuizService {
   }
 
   async saveQuiz(quiz) {
+    console.log('=== SAVE QUIZ SERVICE CALLED ===');
+    console.log('Quiz to save:', JSON.stringify({
+      title: quiz.title,
+      questions: quiz.questions?.length || 0,
+      createdBy: quiz.createdBy,
+      uniqueCode: quiz.uniqueCode
+    }, null, 2));
+
     await ensureConnected();
     const db = client.db(dbName);
     const collection = db.collection('quizzes');
     const result = await collection.insertOne(quiz);
+    
+    console.log('Quiz inserted successfully');
+    console.log('Inserted ID:', result.insertedId.toString());
+    console.log('Installed quiz createdBy:', quiz.createdBy);
+    
     return result.insertedId.toString();
   }
 
@@ -98,6 +111,7 @@ class QuizService {
   async getQuizzesByAdminId(adminId) {
     console.log('=== GET QUIZZES BY ADMIN ID STARTED ===');
     console.log('Searching for adminId:', adminId);
+    console.log('AdminId type:', typeof adminId);
 
     try {
       await ensureConnected();
@@ -108,6 +122,19 @@ class QuizService {
 
       console.log('Querying quizzes collection with createdBy:', adminId);
       const quizDocuments = await collection.find({ createdBy: adminId }).toArray();
+      console.log('Found', quizDocuments.length, 'quizzes with createdBy:', adminId);
+      
+      // Also check what's actually in the database
+      const allQuizzes = await collection.find({}).toArray();
+      console.log('Total quizzes in database:', allQuizzes.length);
+      if (allQuizzes.length > 0) {
+        console.log('Sample quiz createdBy values:', allQuizzes.slice(0, 3).map(q => ({ 
+          title: q.title, 
+          createdBy: q.createdBy,
+          createdByType: typeof q.createdBy 
+        })));
+      }
+
       const mappedQuizzes = quizDocuments.map(quizDocument => ({
         id: quizDocument._id.toString(),
         title: quizDocument.title,
