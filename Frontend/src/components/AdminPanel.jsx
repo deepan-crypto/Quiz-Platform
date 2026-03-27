@@ -23,6 +23,13 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
     console.log('AdminPanel useEffect triggered, quizzes:', quizzes);
     if (user?.id) {
       fetchAllAdminResults();
+      
+      // Auto-refresh results every 5 seconds
+      const refreshInterval = setInterval(() => {
+        fetchAllAdminResults();
+      }, 5000);
+      
+      return () => clearInterval(refreshInterval);
     }
   }, [quizzes, user]);
 
@@ -34,22 +41,27 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
       const response = await fetch(`http://localhost:3001/api/quiz/admin-results/${user.id}`);
       const data = await response.json();
       console.log('Admin results API Response:', data);
+      console.log('Current quizzes:', quizzes);
 
       if (data.success) {
         // Convert admin results format to the expected quiz results format
         const resultsMap = {};
         data.results.forEach(quizResult => {
+          console.log(`Mapping quiz results for quizId: ${quizResult.quizId}, results count: ${quizResult.results?.length || 0}`);
           resultsMap[quizResult.quizId] = quizResult.results || [];
         });
 
         // Also set results for any quizzes that don't have results yet
         quizzes.forEach(quiz => {
           if (!resultsMap[quiz.id]) {
+            console.log(`No results found for quiz ${quiz.id}, setting empty array`);
             resultsMap[quiz.id] = [];
           }
         });
 
-        console.log('Setting quiz results map:', resultsMap);
+        console.log('Final quiz results map:', resultsMap);
+        console.log('Results map keys:', Object.keys(resultsMap));
+        console.log('Quiz IDs:', quizzes.map(q => q.id));
         setQuizResults(resultsMap);
       } else {
         console.error('Error fetching admin results:', data.error);
@@ -258,7 +270,7 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
