@@ -232,7 +232,7 @@ export function UserPanel({ quizzes, onLogout, user }) {
   // Quiz Code Entry Screen
   if (!currentQuiz) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      <div className="min-h-screen bg-white">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
@@ -270,7 +270,11 @@ export function UserPanel({ quizzes, onLogout, user }) {
                   Join Quiz
                 </button>
                 <button
-                  onClick={() => setActiveTab('history')}
+                  onClick={() => {
+                    setActiveTab('history');
+                    // Refresh quiz history when tab is opened
+                    fetchUserQuizHistory();
+                  }}
                   className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-300 ${
                     activeTab === 'history'
                       ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
