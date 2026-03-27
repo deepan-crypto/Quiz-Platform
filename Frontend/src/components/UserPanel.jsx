@@ -249,13 +249,12 @@ export function UserPanel({ quizzes, onLogout, user }) {
           {/* Header */}
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
             <div>
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
                 <h1 className="text-3xl font-bold text-gray-800">Sri Eshwar College</h1>
               </div>
-              <p className="text-gray-700 ml-15">Welcome back, <span className="font-semibold">{user?.name}</span>! Join quizzes and track your progress</p>
             </div>
             <button
               onClick={onLogout}
