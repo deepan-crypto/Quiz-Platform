@@ -241,9 +241,9 @@ export function UserPanel({ quizzes, onLogout, user }) {
                 <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
-                <h1 className="text-3xl font-bold text-white">Sri Eshwar College</h1>
+                <h1 className="text-3xl font-bold text-gray-800">Sri Eshwar College</h1>
               </div>
-              <p className="text-blue-200 ml-15">Welcome back, <span className="font-semibold">{user?.name}</span>! Join quizzes and track your progress</p>
+              <p className="text-gray-700 ml-15">Welcome back, <span className="font-semibold">{user?.name}</span>! Join quizzes and track your progress</p>
             </div>
             <button
               onClick={onLogout}
