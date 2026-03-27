@@ -14,31 +14,6 @@ const handleQuizErrors = (err, req, res, next) => {
   });
 };
 
-// Add route for getting quiz by ID with better error handling
-router.get('/:quizId', async (req, res) => {
-  const { quizId } = req.params;
-  console.log('Fetching quiz with ID:', quizId);
-  
-  try {
-    const quiz = await quizService.getQuizById(quizId);
-    if (!quiz) {
-      return res.status(404).json({
-        success: false,
-        error: 'Quiz not found'
-      });
-    }
-    
-    console.log('Successfully found quiz:', quiz.title);
-    res.json({
-      success: true,
-      quiz
-    });
-  } catch (error) {
-    console.error('Error fetching quiz:', error);
-    handleQuizErrors(error, req, res);
-  }
-});
-
 // Debug: Log environment variables
 console.log('In quizRoutes.js - Environment variables:');
 console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
@@ -417,10 +392,13 @@ router.get('/user-results/:userId', async (req, res) => {
       });
     }
 
+    console.log('=== GET USER QUIZ RESULTS ROUTE ===');
     console.log('Fetching quiz results for user ID:', userId);
+    console.log('User ID type:', typeof userId);
 
     const results = await quizService.getQuizResultsByUserId(userId);
     console.log('Found', results.length, 'quiz results for user ID:', userId);
+    console.log('Results data:', JSON.stringify(results, null, 2));
 
     res.json({
       success: true,
@@ -431,7 +409,6 @@ router.get('/user-results/:userId', async (req, res) => {
       error: error.message,
       stack: error.stack,
       userId: userId,
-      resultsCount: results?.length || 0,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({
@@ -525,6 +502,31 @@ router.put('/:quizId', async (req, res) => {
       success: false,
       error: 'Failed to update quiz'
     });
+  }
+});
+
+// Generic route for getting quiz by ID - MUST BE LAST to avoid shadowing specific routes
+router.get('/:quizId', async (req, res) => {
+  const { quizId } = req.params;
+  console.log('Fetching quiz with ID:', quizId);
+  
+  try {
+    const quiz = await quizService.getQuizById(quizId);
+    if (!quiz) {
+      return res.status(404).json({
+        success: false,
+        error: 'Quiz not found'
+      });
+    }
+    
+    console.log('Successfully found quiz:', quiz.title);
+    res.json({
+      success: true,
+      quiz
+    });
+  } catch (error) {
+    console.error('Error fetching quiz:', error);
+    handleQuizErrors(error, req, res);
   }
 });
 
