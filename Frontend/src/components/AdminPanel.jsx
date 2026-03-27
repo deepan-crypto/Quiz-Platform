@@ -113,6 +113,7 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
 
       if (data.success) {
         console.log('Quiz data received:', data.quiz); // Debug log
+        console.log('Quiz createdBy field:', data.quiz?.createdBy); // Check createdBy
         
         // Save the generated quiz to database
         const saveResponse = await fetch('http://localhost:3001/api/quiz/save', {
@@ -124,6 +125,7 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
         });
 
         const saveData = await saveResponse.json();
+        console.log('Save response:', saveData);
         
         if (saveData.success) {
           console.log('Quiz saved successfully:', saveData);
@@ -137,6 +139,7 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
           }, 1000);
         } else {
           console.error('Error saving quiz:', saveData.error);
+          alert('Error saving quiz: ' + saveData.error);
         }
       } else {
         console.error('Error generating quiz:', data.error);
@@ -279,9 +282,9 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
               <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-3xl font-bold text-white">Quiz Management</h1>
+              <h1 className="text-3xl font-bold text-gray-800">Quiz Management</h1>
             </div>
-            <p className="text-blue-200">Welcome back, <span className="font-semibold">{user?.name}</span>! Create and manage your quizzes</p>
+            <p className="text-gray-700">Welcome back, <span className="font-semibold">{user?.name}</span>! Create and manage your quizzes</p>
           </div>
           <button
             onClick={onLogout}
