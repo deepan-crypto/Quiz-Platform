@@ -156,6 +156,10 @@ router.post('/save', async (req, res) => {
   try {
     const quiz = req.body;
 
+    console.log('=== SAVE QUIZ ROUTE CALLED ===');
+    console.log('Quiz object received:', JSON.stringify(quiz, null, 2));
+    console.log('createdBy field:', quiz?.createdBy);
+
     if (!quiz || !quiz.questions || quiz.questions.length === 0) {
       return res.status(400).json({
         success: false,
@@ -163,7 +167,18 @@ router.post('/save', async (req, res) => {
       });
     }
 
+    // Ensure createdBy is set
+    if (!quiz.createdBy) {
+      console.warn('WARNING: createdBy field is missing from quiz object');
+      return res.status(400).json({
+        success: false,
+        error: 'Quiz must have a createdBy field (admin ID)'
+      });
+    }
+
     const quizId = await quizService.saveQuiz(quiz);
+    console.log('Quiz saved successfully with ID:', quizId, 'createdBy:', quiz.createdBy);
+    
     res.json({
       success: true,
       quizId,
@@ -178,7 +193,8 @@ router.post('/save', async (req, res) => {
         title: quiz?.title,
         questionsCount: quiz?.questions?.length || 0,
         category: quiz?.category,
-        difficulty: quiz?.difficulty
+        difficulty: quiz?.difficulty,
+        createdBy: quiz?.createdBy
       },
       timestamp: new Date().toISOString()
     });
