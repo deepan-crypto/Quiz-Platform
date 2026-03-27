@@ -191,15 +191,9 @@ export function AuthForm({ onAuth, selectedRole }) {
 
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              <h1 className="text-3xl font-bold text-gray-800">
                 {isLogin ? 'Welcome Back' : 'Create Account'}
               </h1>
-              <p className="text-gray-600 text-sm">
-                {selectedRole === 'admin'
-                  ? (isLogin ? 'Admin login - Manage quizzes and users' : 'Create your admin account')
-                  : (isLogin ? 'Access your quizzes and track progress' : 'Start your quiz journey today')
-                }
-              </p>
             </div>
 
             {/* Error Display */}
