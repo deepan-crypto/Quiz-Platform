@@ -64,13 +64,23 @@ router.post('/generate', async (req, res) => {
   try {
     const { topic, difficulty, numberOfQuestions, category, adminId } = req.body;
 
+    console.log('=== QUIZ GENERATION REQUEST ===');
+    console.log('Topic:', topic);
+    console.log('Difficulty:', difficulty);
+    console.log('Number of Questions:', numberOfQuestions);
+    console.log('Category:', category);
+    console.log('Admin ID:', adminId);
+
     // Validate input
     if (!topic || !difficulty || !numberOfQuestions || !category || !adminId) {
+      console.log('Validation failed - missing fields');
       return res.status(400).json({
         success: false,
         error: 'Missing required fields: topic, difficulty, numberOfQuestions, category, adminId'
       });
     }
+
+    console.log('Validation passed, calling OpenAI service...');
 
     // Generate quiz using OpenAI API
     const quizData = await openaiService.generateQuiz({
@@ -79,6 +89,8 @@ router.post('/generate', async (req, res) => {
       numberOfQuestions,
       category
     });
+
+    console.log('OpenAI response received:', { title: quizData.title, questionsCount: quizData.questions?.length });
 
     const quiz = {
       success: true,
@@ -89,7 +101,7 @@ router.post('/generate', async (req, res) => {
         questions: quizData.questions || [],
         category: category,
         difficulty: difficulty,
-        createdBy: adminId, // Use the actual admin ID instead of 'system'
+        createdBy: adminId,
         createdAt: new Date(),
         uniqueCode: generateUniqueCode(),
         isActive: true,
@@ -100,21 +112,15 @@ router.post('/generate', async (req, res) => {
 
     res.json(quiz);
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] QUIZ GENERATION ERROR:`, {
-      error: error.message,
-      stack: error.stack,
-      requestBody: {
-        topic,
-        difficulty,
-        numberOfQuestions,
-        category,
-        adminId
-      },
-      timestamp: new Date().toISOString()
-    });
+    console.error(`[${new Date().toISOString()}] QUIZ GENERATION ERROR:`);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    
     res.status(500).json({
       success: false,
-      error: 'Failed to generate quiz. Please try again.'
+      error: error.message || 'Failed to generate quiz. Please try again.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
