@@ -1,4 +1,5 @@
 const express = require('express');
+const { BedrockService } = require('../services/bedrockService');
 const { OpenAIService } = require('../services/openaiService');
 const { QuizService } = require('../services/quizService');
 
@@ -16,13 +17,20 @@ const handleQuizErrors = (err, req, res) => {
 
 const quizService = new QuizService();
 
-// Helper to get or lazily initialize OpenAI service
-const getOpenAIService = () => {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey || apiKey === 'your_openai_api_key_here') {
-    return null;
+// Helper to get or lazily initialize the active AI service (AWS Bedrock Nova Lite by default, OpenAI as fallback)
+const getAIService = () => {
+  // Check AWS Bedrock credentials first
+  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+    return new BedrockService();
   }
-  return new OpenAIService(apiKey);
+
+  // Fallback to OpenAI if configured
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (apiKey && apiKey !== 'your_openai_api_key_here') {
+    return new OpenAIService(apiKey);
+  }
+
+  return null;
 };
 
 // Function to generate unique 6-digit code
@@ -30,7 +38,7 @@ function generateUniqueCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Route for quiz generation using OpenAI API
+// Route for quiz generation using AI (AWS Bedrock Nova Lite)
 router.post('/generate', async (req, res) => {
   try {
     const { topic, difficulty, numberOfQuestions, category, adminId } = req.body;
@@ -51,25 +59,25 @@ router.post('/generate', async (req, res) => {
       });
     }
 
-    const openaiService = getOpenAIService();
-    if (!openaiService) {
+    const aiService = getAIService();
+    if (!aiService) {
       return res.status(503).json({
         success: false,
-        error: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in the backend environment variables.'
+        error: 'AI service is not configured. Please set AWS Bedrock credentials (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY) in the backend environment variables.'
       });
     }
 
-    console.log('Validation passed, calling OpenAI service...');
+    console.log('Validation passed, calling AI service (AWS Bedrock Nova Lite)...');
 
-    // Generate quiz using OpenAI API
-    const quizData = await openaiService.generateQuiz({
+    // Generate quiz using AI
+    const quizData = await aiService.generateQuiz({
       topic,
       difficulty,
       numberOfQuestions,
       category
     });
 
-    console.log('OpenAI response received:', { title: quizData.title, questionsCount: quizData.questions?.length });
+    console.log('AI response received:', { title: quizData.title, questionsCount: quizData.questions?.length });
 
     const quiz = {
       success: true,
@@ -111,15 +119,15 @@ router.post('/generate-questions', async (req, res) => {
       });
     }
 
-    const openaiService = getOpenAIService();
-    if (!openaiService) {
+    const aiService = getAIService();
+    if (!aiService) {
       return res.status(503).json({
         success: false,
-        error: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in the backend environment variables.'
+        error: 'AI service is not configured. Please set AWS Bedrock credentials in backend environment variables.'
       });
     }
 
-    const questions = await openaiService.generateQuestions(topic, difficulty, count);
+    const questions = await aiService.generateQuestions(topic, difficulty, count);
     res.json({ success: true, questions });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] QUESTION GENERATION ERROR:`, {

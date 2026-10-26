@@ -14,12 +14,13 @@ const authRoutes = require('./routes/authRoutes');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Log OpenAI API key status on boot
-const apiKey = process.env.OPENAI_API_KEY;
-if (!apiKey || apiKey === 'your_openai_api_key_here') {
-  console.warn('⚠️  WARNING: OPENAI_API_KEY is not configured in .env. AI quiz generation will be disabled until set.');
+// Log AI engine status on boot
+if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+  console.log(`✅ AWS Bedrock loaded (Model: ${process.env.BEDROCK_MODEL_ID || 'apac.amazon.nova-lite-v1:0'}, Region: ${process.env.AWS_DEFAULT_REGION || 'ap-south-1'})`);
+} else if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your_openai_api_key_here') {
+  console.log('✅ OpenAI API key loaded:', process.env.OPENAI_API_KEY.substring(0, 7) + '...');
 } else {
-  console.log('✅ OpenAI API key loaded:', apiKey.substring(0, 7) + '...');
+  console.warn('⚠️  WARNING: Neither AWS Bedrock credentials nor OpenAI API key are configured in .env. AI quiz generation will be disabled.');
 }
 
 // Allowed CORS origins
