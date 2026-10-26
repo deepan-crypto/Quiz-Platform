@@ -59,11 +59,27 @@ app.use(cors({
 app.use(express.json());
 
 // Health check endpoint (for deployment platforms like Render, Railway, AWS, Fly.io)
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+  let dbStatus = 'disconnected';
+  let dbError = null;
+  try {
+    const { getDb } = require('./db');
+    const db = await getDb();
+    await db.command({ ping: 1 });
+    dbStatus = 'connected';
+  } catch (err) {
+    dbError = err.message;
+  }
+
   res.json({
     status: 'ok',
     uptime: process.uptime(),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    database: {
+      status: dbStatus,
+      isConfigured: !!process.env.MONGODB_URI && !process.env.MONGODB_URI.includes('localhost') && !process.env.MONGODB_URI.includes('127.0.0.1'),
+      error: dbError
+    }
   });
 });
 

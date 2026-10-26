@@ -3,6 +3,15 @@ const { MongoClient } = require('mongodb');
 const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const dbName = process.env.MONGODB_DB_NAME || 'EduAI';
 
+// Warn if deployed without a cloud MongoDB instance
+if (process.env.NODE_ENV === 'production' && (!process.env.MONGODB_URI || process.env.MONGODB_URI.includes('localhost') || process.env.MONGODB_URI.includes('127.0.0.1'))) {
+  console.warn('⚠️ ==============================================================');
+  console.warn('⚠️ WARNING: Deployed in production but MONGODB_URI is not set to a remote MongoDB (like MongoDB Atlas)!');
+  console.warn('⚠️ Cloud containers (such as Render) do not have a local MongoDB daemon.');
+  console.warn('⚠️ Please add MONGODB_URI in your Render Dashboard > Environment.');
+  console.warn('⚠️ ==============================================================');
+}
+
 let client = null;
 let db = null;
 let connectionPromise = null;
@@ -20,13 +29,15 @@ async function connectToDatabase() {
       try {
         const maskedUri = uri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
         console.log(`Connecting to MongoDB at: ${maskedUri}`);
-        client = new MongoClient(uri);
+        client = new MongoClient(uri, {
+          serverSelectionTimeoutMS: 5000, // Timeout faster (5s) instead of hanging for 30s
+        });
         await client.connect();
         db = client.db(dbName);
-        console.log(`Successfully connected to MongoDB database: ${dbName}`);
+        console.log(`✅ Successfully connected to MongoDB database: ${dbName}`);
         return { client, db };
       } catch (error) {
-        console.error('Failed to connect to MongoDB:', error.message);
+        console.error('❌ Failed to connect to MongoDB:', error.message);
         connectionPromise = null; // Reset to allow retry on subsequent requests
         throw error;
       }
@@ -56,5 +67,6 @@ module.exports = {
   connectToDatabase,
   getDb,
   getClient,
-  dbName
+  dbName,
+  uri
 };

@@ -58,7 +58,17 @@ class AuthService {
       return { success: true, user: userWithoutPassword };
     } catch (error) {
       console.error('Error in signup:', error);
-      return { success: false, error: 'Failed to create user' };
+      const isDbError = error.name === 'MongoServerSelectionError' ||
+        error.message?.includes('ECONNREFUSED') ||
+        error.message?.includes('buffering timed out') ||
+        error.message?.includes('topology') ||
+        error.name?.includes('Mongo');
+
+      const errorMessage = isDbError
+        ? 'Database connection failed. Please ensure MONGODB_URI is configured with a valid MongoDB Atlas connection string in your Render environment variables.'
+        : (error.message || 'Failed to create user');
+
+      return { success: false, error: errorMessage };
     }
   }
 
@@ -89,7 +99,17 @@ class AuthService {
       return { success: true, user: userWithoutPassword };
     } catch (error) {
       console.error('Error in login:', error);
-      return { success: false, error: 'Login failed' };
+      const isDbError = error.name === 'MongoServerSelectionError' ||
+        error.message?.includes('ECONNREFUSED') ||
+        error.message?.includes('buffering timed out') ||
+        error.message?.includes('topology') ||
+        error.name?.includes('Mongo');
+
+      const errorMessage = isDbError
+        ? 'Database connection failed. Please ensure MONGODB_URI is configured with a valid MongoDB Atlas connection string in your Render environment variables.'
+        : (error.message || 'Login failed');
+
+      return { success: false, error: errorMessage };
     }
   }
 
