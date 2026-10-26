@@ -119,4 +119,21 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`🚀 EduAI Server is running on port ${PORT}`);
   console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+
+  // Keep-alive mechanism for Render free tier (which sleeps after 15 minutes of inactivity)
+  const serverUrl = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL;
+  if (serverUrl) {
+    const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
+    setInterval(async () => {
+      try {
+        const pingEndpoint = `${serverUrl.replace(/\/+$/, '')}/health`;
+        const res = await fetch(pingEndpoint);
+        console.log(`[Keep-Alive] Pinged ${pingEndpoint} - Status: ${res.status}`);
+      } catch (err) {
+        console.warn(`[Keep-Alive] Ping warning:`, err.message);
+      }
+    }, PING_INTERVAL);
+    console.log(`⏱️ Keep-alive scheduled for ${serverUrl} every 14 minutes`);
+  }
 });
+

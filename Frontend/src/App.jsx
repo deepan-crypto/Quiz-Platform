@@ -93,43 +93,117 @@ function App() {
     setQuizzes([]); // Clear quizzes to prevent data leakage between admin sessions
   };
 
+  // Early pre-warming ping for Render free tier backend
+  const [serverWarmup, setServerWarmup] = useState({
+    status: 'checking', // 'checking' | 'waking' | 'ready' | 'idle'
+    message: ''
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    // If backend takes longer than 2.5 seconds to respond, show warming status
+    const timer = setTimeout(() => {
+      if (isMounted) {
+        setServerWarmup({
+          status: 'waking',
+          message: 'Connecting to server (waking up free tier instance, ~30s)...'
+        });
+      }
+    }, 2500);
+
+    fetch(`${API_BASE_URL}/health`)
+      .then((res) => res.json())
+      .then(() => {
+        clearTimeout(timer);
+        if (isMounted) {
+          setServerWarmup((prev) => {
+            if (prev.status === 'waking') {
+              setTimeout(() => {
+                if (isMounted) setServerWarmup({ status: 'idle', message: '' });
+              }, 3000);
+              return { status: 'ready', message: 'Backend connected successfully!' };
+            }
+            return { status: 'idle', message: '' };
+          });
+        }
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        console.warn('Initial server warmup check:', err.message);
+      });
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, []);
+
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
   };
   
-  // Show role selection if no role is selected
-  if (!selectedRole) {
-    return <RoleSelection onRoleSelect={handleRoleSelect} />;
-  }
+  const renderContent = () => {
+    // Show role selection if no role is selected
+    if (!selectedRole) {
+      return <RoleSelection onRoleSelect={handleRoleSelect} />;
+    }
 
-  // Show authentication form if not authenticated but role is selected
-  if (!authState.isAuthenticated) {
-    return <AuthForm onAuth={handleAuth} selectedRole={selectedRole} />;
-  }
-  
-  // Show appropriate panel based on user role
-  console.log('User role check:', authState.user?.role, 'Full user object:', authState.user);
-  if (authState.user?.role === 'admin') {
-    console.log('Rendering AdminPanel with user:', authState.user);
+    // Show authentication form if not authenticated but role is selected
+    if (!authState.isAuthenticated) {
+      return <AuthForm onAuth={handleAuth} selectedRole={selectedRole} />;
+    }
+    
+    // Show appropriate panel based on user role
+    console.log('User role check:', authState.user?.role, 'Full user object:', authState.user);
+    if (authState.user?.role === 'admin') {
+      console.log('Rendering AdminPanel with user:', authState.user);
+      return (
+        <AdminPanel
+          quizzes={quizzes}
+          onCreateQuiz={handleCreateQuiz}
+          onLogout={handleLogout}
+          user={authState.user}
+        />
+      );
+    }
+
+    console.log('Rendering UserPanel with user:', authState.user);
+    console.log('User name being passed:', authState.user?.name || 'EMPTY');
+
     return (
-      <AdminPanel
+      <UserPanel
         quizzes={quizzes}
-        onCreateQuiz={handleCreateQuiz}
         onLogout={handleLogout}
         user={authState.user}
       />
     );
-  }
-
-  console.log('Rendering UserPanel with user:', authState.user);
-  console.log('User name being passed:', authState.user?.name || 'EMPTY');
+  };
 
   return (
-    <UserPanel
-      quizzes={quizzes}
-      onLogout={handleLogout}
-      user={authState.user}
-    />
+    <>
+      {serverWarmup.status !== 'idle' && serverWarmup.status !== 'checking' && (
+        <div
+          className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full shadow-lg text-xs md:text-sm font-medium flex items-center gap-2 transition-all duration-300 ${
+            serverWarmup.status === 'ready'
+              ? 'bg-emerald-600 text-white shadow-emerald-500/20'
+              : 'bg-indigo-600 text-white shadow-indigo-500/20 animate-pulse'
+          }`}
+        >
+          {serverWarmup.status === 'waking' ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-amber-300 animate-ping" />
+              <span>{serverWarmup.message}</span>
+            </>
+          ) : (
+            <>
+              <span>✓</span>
+              <span>{serverWarmup.message}</span>
+            </>
+          )}
+        </div>
+      )}
+      {renderContent()}
+    </>
   );
 }
 
