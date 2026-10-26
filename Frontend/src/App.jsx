@@ -3,6 +3,7 @@ import { AuthForm } from './components/AuthForm';
 import { AdminPanel } from './components/AdminPanel';
 import { UserPanel } from './components/UserPanel';
 import { RoleSelection } from './components/RoleSelection';
+import API_BASE_URL from './config/api';
 // Types are now defined as JSDoc comments in types files
 
 function App() {
@@ -20,7 +21,7 @@ function App() {
 
       try {
         // Use admin-specific endpoint to get only quizzes created by this admin
-        const response = await fetch(`http://localhost:3001/api/quiz/admin/${authState.user.id}`);
+        const response = await fetch(`${API_BASE_URL}/api/quiz/admin/${authState.user.id}`);
         const data = await response.json();
 
         if (data.success) {

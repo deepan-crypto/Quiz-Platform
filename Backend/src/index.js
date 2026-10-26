@@ -1,39 +1,106 @@
 // Load environment variables first
-require('dotenv').config({ path: './.env' });
+const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const express = require('express');
 const cors = require('cors');
 const quizRoutes = require('./routes/quizRoutes');
 const authRoutes = require('./routes/authRoutes');
-const app = express();
-const PORT = process.env.PORT || 3001; // Use environment variable or default to 3001
 
-// Ensure API key is available
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Log OpenAI API key status on boot
 const apiKey = process.env.OPENAI_API_KEY;
-if (!apiKey) {
-  console.error('OPENAI_API_KEY environment variable is required');
-  console.error('Please set OPENAI_API_KEY in your .env file');
-  process.exit(1);
+if (!apiKey || apiKey === 'your_openai_api_key_here') {
+  console.warn('⚠️  WARNING: OPENAI_API_KEY is not configured in .env. AI quiz generation will be disabled until set.');
+} else {
+  console.log('✅ OpenAI API key loaded:', apiKey.substring(0, 7) + '...');
 }
 
-// Middleware
+// Allowed CORS origins
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'http://localhost:5176',
+  'http://localhost:3000',
+  'http://localhost:4173',
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(s => s.trim()) : []),
+  ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(s => s.trim()) : [])
+].filter(Boolean);
+
+// CORS configuration for local development and cloud deployment
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5176'], // Allow both Vite dev servers
+  origin: (origin, callback) => {
+    // Allow non-browser requests (Postman, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    // If wildcard or in allowed list
+    if (
+      process.env.CLIENT_URL === '*' ||
+      process.env.FRONTEND_URL === '*' ||
+      allowedOrigins.includes(origin) ||
+      process.env.NODE_ENV !== 'production'
+    ) {
+      return callback(null, true);
+    }
+
+    // Default allow to ensure deployed frontend can communicate
+    return callback(null, true);
+  },
   credentials: true
 }));
+
 app.use(express.json());
 
-// Sample route
+// Health check endpoint (for deployment platforms like Render, Railway, AWS, Fly.io)
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Root welcome route
 app.get('/', (req, res) => {
-  res.send('Welcome to the EduAI Backend API!');
+  res.json({
+    message: 'Welcome to the EduAI Backend API!',
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      quiz: '/api/quiz',
+      auth: '/api/auth'
+    }
+  });
 });
 
 // API Routes
 app.use('/api/quiz', quizRoutes);
 app.use('/api/auth', authRoutes);
 
+// Global 404 handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, error: 'Endpoint not found' });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled server error:', err);
+  res.status(500).json({
+    success: false,
+    error: 'Internal server error',
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
 // Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-  console.log('Using OpenAI API key:', apiKey.substring(0, 10) + '...'); // Log first 10 chars for security
+  console.log(`🚀 EduAI Server is running on port ${PORT}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
 });

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Play, ArrowRight, CheckCircle, XCircle } from 'lucide-react';
+import API_BASE_URL from '../config/api';
 // Types are now defined as JSDoc comments in types/quiz.js
 
 export function QuizParticipation({ onBack }) {
@@ -23,7 +24,7 @@ export function QuizParticipation({ onBack }) {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:3001/api/quiz/code/${quizCode}`);
+      const response = await fetch(`${API_BASE_URL}/api/quiz/code/${quizCode}`);
       const data = await response.json();
 
       if (data.success) {
@@ -51,7 +52,7 @@ export function QuizParticipation({ onBack }) {
 
     // Save result
     const result = {
-      questionId: currentQuestion.id,
+      questionId: currentQuestion.id || `q_${currentQuestionIndex}`,
       selectedAnswer: ['A', 'B', 'C', 'D'][selectedAnswer],
       isCorrect: isCorrect
     };
@@ -100,7 +101,7 @@ export function QuizParticipation({ onBack }) {
         answersCount: resultData.answers.length
       });
 
-      const response = await fetch('http://localhost:3001/api/quiz/result', {
+      const response = await fetch(`${API_BASE_URL}/api/quiz/result`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

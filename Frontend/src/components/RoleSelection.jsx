@@ -21,7 +21,9 @@ export function RoleSelection({ onRoleSelect, userName }) {
                 </div>
               </div>
               
-              <h1 className="text-4xl font-bold mb-2">Welcome, {userName}!</h1>
+              <h1 className="text-4xl font-bold mb-2">
+                {userName ? `Welcome, ${userName}!` : 'Welcome to EduAI!'}
+              </h1>
               <p className="text-blue-50 text-lg">Select your role to continue</p>
             </div>
           </div>

@@ -73,9 +73,9 @@ router.post('/signup', async (req, res) => {
       error: error.message,
       stack: error.stack,
       requestBody: {
-        name: signupRequest?.name,
-        email: signupRequest?.email,
-        hasPassword: !!signupRequest?.password
+        name: req.body?.name,
+        email: req.body?.email,
+        hasPassword: !!req.body?.password
       },
       timestamp: new Date().toISOString()
     });
@@ -118,8 +118,8 @@ router.post('/login', async (req, res) => {
       error: error.message,
       stack: error.stack,
       requestBody: {
-        email: loginRequest?.email,
-        hasPassword: !!loginRequest?.password
+        email: req.body?.email,
+        hasPassword: !!req.body?.password
       },
       timestamp: new Date().toISOString()
     });
@@ -161,7 +161,7 @@ router.get('/user/:userId', async (req, res) => {
     console.error(`[${new Date().toISOString()}] GET USER ERROR:`, {
       error: error.message,
       stack: error.stack,
-      userId: userId,
+      userId: req.params?.userId,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({
@@ -186,7 +186,6 @@ router.get('/users', async (req, res) => {
     console.error(`[${new Date().toISOString()}] GET ALL USERS ERROR:`, {
       error: error.message,
       stack: error.stack,
-      userCount: users?.length || 0,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({
@@ -225,7 +224,7 @@ router.post('/promote-admin/:userId', async (req, res) => {
     console.error(`[${new Date().toISOString()}] PROMOTE ADMIN ERROR:`, {
       error: error.message,
       stack: error.stack,
-      userId: userId,
+      userId: req.params?.userId,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({
@@ -272,8 +271,8 @@ router.put('/user/:userId/role', async (req, res) => {
     console.error(`[${new Date().toISOString()}] UPDATE USER ROLE ERROR:`, {
       error: error.message,
       stack: error.stack,
-      userId: userId,
-      requestedRole: role,
+      userId: req.params?.userId,
+      requestedRole: req.body?.role,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({

@@ -4,8 +4,8 @@ const { QuizService } = require('../services/quizService');
 
 const router = express.Router();
 
-// Add error handling middleware for quiz routes
-const handleQuizErrors = (err, req, res, next) => {
+// Add error handling helper for quiz routes
+const handleQuizErrors = (err, req, res) => {
   console.error('Quiz route error:', err);
   res.status(500).json({
     success: false,
@@ -14,20 +14,16 @@ const handleQuizErrors = (err, req, res, next) => {
   });
 };
 
-// Debug: Log environment variables
-console.log('In quizRoutes.js - Environment variables:');
-console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
-console.log('OPENAI_API_KEY value:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'undefined');
-
-// Get API key from environment variables only
-const apiKey = process.env.OPENAI_API_KEY;
-if (!apiKey) {
-  console.error('OPENAI_API_KEY environment variable is required');
-  process.exit(1);
-}
-
-const openaiService = new OpenAIService(apiKey);
 const quizService = new QuizService();
+
+// Helper to get or lazily initialize OpenAI service
+const getOpenAIService = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey || apiKey === 'your_openai_api_key_here') {
+    return null;
+  }
+  return new OpenAIService(apiKey);
+};
 
 // Function to generate unique 6-digit code
 function generateUniqueCode() {
@@ -52,6 +48,14 @@ router.post('/generate', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Missing required fields: topic, difficulty, numberOfQuestions, category, adminId'
+      });
+    }
+
+    const openaiService = getOpenAIService();
+    if (!openaiService) {
+      return res.status(503).json({
+        success: false,
+        error: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in the backend environment variables.'
       });
     }
 
@@ -84,14 +88,9 @@ router.post('/generate', async (req, res) => {
     };
 
     console.log('Generated quiz with createdBy:', adminId);
-
     res.json(quiz);
   } catch (error) {
-    console.error(`[${new Date().toISOString()}] QUIZ GENERATION ERROR:`);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
-    
+    console.error(`[${new Date().toISOString()}] QUIZ GENERATION ERROR:`, error.message);
     res.status(500).json({
       success: false,
       error: error.message || 'Failed to generate quiz. Please try again.',
@@ -112,17 +111,21 @@ router.post('/generate-questions', async (req, res) => {
       });
     }
 
+    const openaiService = getOpenAIService();
+    if (!openaiService) {
+      return res.status(503).json({
+        success: false,
+        error: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in the backend environment variables.'
+      });
+    }
+
     const questions = await openaiService.generateQuestions(topic, difficulty, count);
     res.json({ success: true, questions });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] QUESTION GENERATION ERROR:`, {
       error: error.message,
       stack: error.stack,
-      requestBody: {
-        topic,
-        difficulty,
-        count
-      },
+      requestBody: req.body,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({
@@ -138,7 +141,6 @@ router.post('/save', async (req, res) => {
     const quiz = req.body;
 
     console.log('=== SAVE QUIZ ROUTE CALLED ===');
-    console.log('Quiz object received:', JSON.stringify(quiz, null, 2));
     console.log('createdBy field:', quiz?.createdBy);
 
     if (!quiz || !quiz.questions || quiz.questions.length === 0) {
@@ -171,11 +173,11 @@ router.post('/save', async (req, res) => {
       error: error.message,
       stack: error.stack,
       quizData: {
-        title: quiz?.title,
-        questionsCount: quiz?.questions?.length || 0,
-        category: quiz?.category,
-        difficulty: quiz?.difficulty,
-        createdBy: quiz?.createdBy
+        title: req.body?.title,
+        questionsCount: req.body?.questions?.length || 0,
+        category: req.body?.category,
+        difficulty: req.body?.difficulty,
+        createdBy: req.body?.createdBy
       },
       timestamp: new Date().toISOString()
     });
@@ -215,7 +217,7 @@ router.get('/code/:code', async (req, res) => {
     console.error(`[${new Date().toISOString()}] GET QUIZ BY CODE ERROR:`, {
       error: error.message,
       stack: error.stack,
-      code: code,
+      code: req.params?.code,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({
@@ -237,7 +239,6 @@ router.get('/all', async (req, res) => {
     console.error(`[${new Date().toISOString()}] GET ALL QUIZZES ERROR:`, {
       error: error.message,
       stack: error.stack,
-      quizzesCount: quizzes?.length || 0,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({
@@ -270,7 +271,7 @@ router.get('/admin/:adminId', async (req, res) => {
   } catch (error) {
     console.error('GET ADMIN QUIZZES ERROR:', {
       error: error.message,
-      adminId: adminId,
+      adminId: req.params?.adminId,
       timestamp: new Date().toISOString()
     });
     handleQuizErrors(error, req, res);
@@ -281,13 +282,9 @@ router.post('/result', async (req, res) => {
   try {
     const result = req.body;
     console.log('=== QUIZ RESULT REQUEST RECEIVED ===');
-    console.log('Request body:', JSON.stringify(result, null, 2));
 
-    if (!result.quizId || !result.userId || !result.answers) {
+    if (!result || !result.quizId || !result.userId || !result.answers) {
       console.log('Validation failed - missing required fields');
-      console.log('quizId:', result.quizId);
-      console.log('userId:', result.userId);
-      console.log('answers:', result.answers);
       return res.status(400).json({
         success: false,
         error: 'Missing required fields: quizId, userId, answers'
@@ -311,16 +308,8 @@ router.post('/result', async (req, res) => {
       userName: result.userName || 'Anonymous'
     };
 
-    console.log('Validation passed! Saving quiz result:', {
-      quizId: enhancedResult.quizId,
-      userId: enhancedResult.userId,
-      score: enhancedResult.score,
-      totalQuestions: enhancedResult.totalQuestions,
-      answersCount: enhancedResult.answers.length
-    });
-
     const resultId = await quizService.saveQuizResult(enhancedResult);
-    console.log('✅ Quiz result saved successfully with ID:', resultId);
+    console.log('Quiz result saved successfully with ID:', resultId);
 
     return res.json({
       success: true,
@@ -332,11 +321,11 @@ router.post('/result', async (req, res) => {
       error: error.message,
       stack: error.stack,
       resultData: {
-        quizId: result?.quizId,
-        userId: result?.userId,
-        score: result?.score,
-        totalQuestions: result?.totalQuestions,
-        answersCount: result?.answers?.length || 0
+        quizId: req.body?.quizId,
+        userId: req.body?.userId,
+        score: req.body?.score,
+        totalQuestions: req.body?.totalQuestions,
+        answersCount: req.body?.answers?.length || 0
       },
       timestamp: new Date().toISOString()
     });
@@ -357,9 +346,7 @@ router.get('/results/:quizId', async (req, res) => {
     }
 
     console.log('Fetching quiz results for quiz ID:', quizId);
-
     const results = await quizService.getQuizResultsByQuizId(quizId);
-    console.log('Found', results.length, 'quiz results for quiz ID:', quizId);
 
     res.json({
       success: true,
@@ -369,8 +356,7 @@ router.get('/results/:quizId', async (req, res) => {
     console.error(`[${new Date().toISOString()}] GET QUIZ RESULTS ERROR:`, {
       error: error.message,
       stack: error.stack,
-      quizId: quizId,
-      resultsCount: results?.length || 0,
+      quizId: req.params?.quizId,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({
@@ -392,13 +378,8 @@ router.get('/user-results/:userId', async (req, res) => {
       });
     }
 
-    console.log('=== GET USER QUIZ RESULTS ROUTE ===');
     console.log('Fetching quiz results for user ID:', userId);
-    console.log('User ID type:', typeof userId);
-
     const results = await quizService.getQuizResultsByUserId(userId);
-    console.log('Found', results.length, 'quiz results for user ID:', userId);
-    console.log('Results data:', JSON.stringify(results, null, 2));
 
     res.json({
       success: true,
@@ -408,7 +389,7 @@ router.get('/user-results/:userId', async (req, res) => {
     console.error(`[${new Date().toISOString()}] GET USER QUIZ RESULTS ERROR:`, {
       error: error.message,
       stack: error.stack,
-      userId: userId,
+      userId: req.params?.userId,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({
@@ -431,9 +412,7 @@ router.get('/admin-results/:adminId', async (req, res) => {
     }
 
     console.log('Fetching quiz results for admin ID:', adminId);
-
     const results = await quizService.getQuizResultsByAdminId(adminId);
-    console.log('Found results for', results.length, 'quizzes created by admin:', adminId);
 
     res.json({
       success: true,
@@ -443,8 +422,7 @@ router.get('/admin-results/:adminId', async (req, res) => {
     console.error(`[${new Date().toISOString()}] GET ADMIN QUIZ RESULTS ERROR:`, {
       error: error.message,
       stack: error.stack,
-      adminId: adminId || 'undefined',
-      resultsCount: (results && results.length) || 0,
+      adminId: req.params?.adminId,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({
@@ -453,8 +431,6 @@ router.get('/admin-results/:adminId', async (req, res) => {
     });
   }
 });
-
-
 
 // Route to update quiz details
 router.put('/:quizId', async (req, res) => {
@@ -477,7 +453,6 @@ router.put('/:quizId', async (req, res) => {
     }
 
     console.log('Updating quiz with ID:', quizId);
-
     const success = await quizService.updateQuiz(quizId, updatedQuiz);
 
     if (success) {
@@ -495,7 +470,7 @@ router.put('/:quizId', async (req, res) => {
     console.error(`[${new Date().toISOString()}] UPDATE QUIZ ERROR:`, {
       error: error.message,
       stack: error.stack,
-      quizId: quizId,
+      quizId: req.params?.quizId,
       timestamp: new Date().toISOString()
     });
     res.status(500).json({

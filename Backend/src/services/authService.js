@@ -1,28 +1,16 @@
-const { MongoClient } = require('mongodb');
+const { getDb } = require('../db');
 const bcrypt = require('bcrypt');
 // Types are now defined as JSDoc comments in types/quiz.js
 
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const client = new MongoClient(uri);
-const dbName = 'EduAI';
-
 class AuthService {
-  constructor() {
-    // Connect to MongoDB with proper error handling
-    client.connect()
-      .then(() => {
-        console.log('AuthService: Successfully connected to MongoDB');
-      })
-      .catch(error => {
-        console.error('AuthService: Failed to connect to MongoDB:', error);
-        throw error;
-      });
+  async getCollection() {
+    const db = await getDb();
+    return db.collection('users');
   }
 
   async signup(request) {
     try {
-      const db = client.db(dbName);
-      const collection = db.collection('users');
+      const collection = await this.getCollection();
 
       // Check if user already exists
       const existingUser = await collection.findOne({ email: request.email });
@@ -63,7 +51,7 @@ class AuthService {
       console.log('Creating user with role:', user.role);
       console.log('User object:', { id: user.id, name: user.name, email: user.email, role: user.role });
 
-      const result = await collection.insertOne(user);
+      await collection.insertOne(user);
 
       // Return user without password
       const { password, ...userWithoutPassword } = user;
@@ -76,8 +64,7 @@ class AuthService {
 
   async login(request) {
     try {
-      const db = client.db(dbName);
-      const collection = db.collection('users');
+      const collection = await this.getCollection();
 
       // Find user by email
       const user = await collection.findOne({ email: request.email });
@@ -108,8 +95,7 @@ class AuthService {
 
   async getUserById(userId) {
     try {
-      const db = client.db(dbName);
-      const collection = db.collection('users');
+      const collection = await this.getCollection();
       const user = await collection.findOne({ id: userId });
       return user;
     } catch (error) {
@@ -120,8 +106,7 @@ class AuthService {
 
   async getUserByEmail(email) {
     try {
-      const db = client.db(dbName);
-      const collection = db.collection('users');
+      const collection = await this.getCollection();
       const user = await collection.findOne({ email });
       return user;
     } catch (error) {
@@ -132,8 +117,7 @@ class AuthService {
 
   async updateUserRole(userId, role) {
     try {
-      const db = client.db(dbName);
-      const collection = db.collection('users');
+      const collection = await this.getCollection();
       const result = await collection.updateOne(
         { id: userId },
         { $set: { role } }
@@ -147,8 +131,7 @@ class AuthService {
 
   async getAllUsers() {
     try {
-      const db = client.db(dbName);
-      const collection = db.collection('users');
+      const collection = await this.getCollection();
       const users = await collection.find({}).toArray();
       return users.map(user => ({
         id: user.id,

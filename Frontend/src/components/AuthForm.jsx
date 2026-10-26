@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, BookOpen, X, XCircle } from 'lucide-react';
+import API_BASE_URL from '../config/api';
 
 export function AuthForm({ onAuth, selectedRole }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -73,7 +74,7 @@ export function AuthForm({ onAuth, selectedRole }) {
             role: selectedRole
           };
 
-      const response = await fetch(`http://localhost:3001${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Copy, BookOpen, Users, Code, LogOut, BarChart2, Edit, Save, X, Eye } from 'lucide-react';
+import API_BASE_URL from '../config/api';
 // Types are now defined as JSDoc comments in types files
 
 export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
@@ -38,7 +39,7 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
 
     console.log('Fetching all results for admin:', user.id);
     try {
-      const response = await fetch(`http://localhost:3001/api/quiz/admin-results/${user.id}`);
+      const response = await fetch(`${API_BASE_URL}/api/quiz/admin-results/${user.id}`);
       const data = await response.json();
       console.log('Admin results API Response:', data);
       console.log('Current quizzes:', quizzes);
@@ -94,7 +95,7 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
     setIsCreating(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/quiz/generate', {
+      const response = await fetch(`${API_BASE_URL}/api/quiz/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +117,7 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
         console.log('Quiz createdBy field:', data.quiz?.createdBy); // Check createdBy
         
         // Save the generated quiz to database
-        const saveResponse = await fetch('http://localhost:3001/api/quiz/save', {
+        const saveResponse = await fetch(`${API_BASE_URL}/api/quiz/save`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -143,9 +144,11 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
         }
       } else {
         console.error('Error generating quiz:', data.error);
+        alert('Failed to generate quiz: ' + (data.error || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error:', error);
+      alert('Network or server error while generating quiz. Please verify the backend is running.');
     } finally {
       setTopicInput('');
       setIsCreating(false);
@@ -184,7 +187,7 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
   const fetchQuizDetails = async (quizId) => {
     setIsLoadingQuiz(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/quiz/${quizId}`);
+      const response = await fetch(`${API_BASE_URL}/api/quiz/${quizId}`);
       const data = await response.json();
 
       if (data.success) {
@@ -233,7 +236,7 @@ export function AdminPanel({ quizzes, onCreateQuiz, onLogout, user }) {
         questions: editingQuestions
       };
 
-      const response = await fetch(`http://localhost:3001/api/quiz/${editingQuiz.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/quiz/${editingQuiz.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

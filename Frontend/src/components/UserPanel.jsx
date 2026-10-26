@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, RotateCcw, Trophy, X, CheckCircle, XCircle, LogOut, History, BookOpen, Calendar, Award } from 'lucide-react';
+import API_BASE_URL from '../config/api';
 // Types are now defined as JSDoc comments in types files
 
 export function UserPanel({ quizzes, onLogout, user }) {
@@ -32,7 +33,7 @@ export function UserPanel({ quizzes, onLogout, user }) {
     setLoadingHistory(true);
     console.log('UserPanel: Fetching quiz history for user ID:', user.id);
     try {
-      const url = `http://localhost:3001/api/quiz/user-results/${user.id}`;
+      const url = `${API_BASE_URL}/api/quiz/user-results/${user.id}`;
       console.log('UserPanel: Making request to:', url);
       const response = await fetch(url);
       console.log('UserPanel: Response status:', response.status);
@@ -65,7 +66,7 @@ export function UserPanel({ quizzes, onLogout, user }) {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:3001/api/quiz/code/${quizCode}`);
+      const response = await fetch(`${API_BASE_URL}/api/quiz/code/${quizCode}`);
       const data = await response.json();
 
       if (data.success) {
@@ -97,6 +98,58 @@ export function UserPanel({ quizzes, onLogout, user }) {
     setShowAnswer(false);
   };
 
+  const calculateScore = (results = questionResults) => {
+    if (!results || results.length === 0) {
+      return { correct: 0, total: 0, percentage: 0 };
+    }
+    const correctAnswers = results.filter(result => result.isCorrect).length;
+    return {
+      correct: correctAnswers,
+      total: results.length,
+      percentage: Math.round((correctAnswers / results.length) * 100)
+    };
+  };
+
+  const submitQuizResults = async (finalResults) => {
+    if (!currentQuiz || !finalResults || finalResults.length === 0) return;
+
+    const score = calculateScore(finalResults);
+    const userId = user?.id || `Anonymous_${Date.now()}`;
+    const userName = user?.name || 'Anonymous';
+
+    const resultData = {
+      quizId: currentQuiz.id,
+      userId: userId,
+      userName: userName,
+      score: score.correct,
+      totalQuestions: score.total,
+      answers: finalResults,
+      completedAt: new Date(),
+      quizTitle: currentQuiz.title
+    };
+
+    console.log('Sending quiz result:', resultData);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/quiz/result`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(resultData),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        console.log('Quiz result saved successfully with ID:', data.resultId);
+      } else {
+        console.error('Error saving quiz result:', data.error);
+      }
+    } catch (error) {
+      console.error('Error submitting quiz result:', error);
+    }
+  };
+
   const handleSubmitAnswer = async () => {
     if (selectedAnswer === null || !currentQuiz) return;
 
@@ -104,7 +157,7 @@ export function UserPanel({ quizzes, onLogout, user }) {
     const isCorrect = selectedAnswer === ['A', 'B', 'C', 'D'].indexOf(currentQuestion.correctAnswer);
 
     const result = {
-      questionId: currentQuestion.id,
+      questionId: currentQuestion.id || `q_${currentQuestionIndex}`,
       selectedAnswer: ['A', 'B', 'C', 'D'][selectedAnswer],
       isCorrect
     };
@@ -134,61 +187,7 @@ export function UserPanel({ quizzes, onLogout, user }) {
         setShowAnswer(false);
       }, 1500);
     } else {
-      console.log('Quiz completed! Showing results and sending to backend...', {
-        questionResultsLength: newQuestionResults.length,
-        totalQuestions: currentQuiz.questions.length
-      });
-
-      // Send quiz results to backend automatically when quiz is completed
-      const score = calculateScore();
-
-      // Use real user ID from authentication
-      const userId = user?.id || `Anonymous_${Date.now()}`;
-      const userName = user?.name || 'Anonymous';
-
-      const resultData = {
-        quizId: currentQuiz.id,
-        userId: userId,
-        userName: userName,
-        score: score.correct,
-        totalQuestions: score.total,
-        answers: newQuestionResults,
-        completedAt: new Date(),
-        quizTitle: currentQuiz.title
-      };
-
-      console.log('Sending quiz result automatically:', {
-        quizId: resultData.quizId,
-        userId: resultData.userId,
-        userNameProvided: user?.name,
-        score: resultData.score,
-        totalQuestions: resultData.totalQuestions,
-        answersCount: resultData.answers.length
-      });
-
-      // Send results to backend with improved error handling
-    try {
-      const response = await fetch('http://localhost:3001/api/quiz/result', {
-        method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(resultData),
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          console.log('Quiz result saved successfully with ID:', data.resultId);
-        } else {
-          console.error('Error saving quiz result:', data.error);
-          // Could add user notification here if needed
-        }
-      } catch (error) {
-        console.error('Error submitting quiz result:', error);
-        // Could add retry logic or user notification here
-      }
-
+      submitQuizResults(newQuestionResults);
       setTimeout(() => {
         setShowResults(true);
       }, 1500);
@@ -201,6 +200,7 @@ export function UserPanel({ quizzes, onLogout, user }) {
       setSelectedAnswer(null);
       setShowAnswer(false);
     } else {
+      submitQuizResults(questionResults);
       setShowResults(true);
     }
   };
@@ -216,7 +216,7 @@ export function UserPanel({ quizzes, onLogout, user }) {
   const handleBackToStart = () => {
     console.log('handleBackToStart called - resetting quiz state');
 
-    // Reset state (results are already sent automatically when quiz completed)
+    // Reset state
     setCurrentQuiz(null);
     setQuizCode('');
     setCurrentQuestionIndex(0);
@@ -230,15 +230,6 @@ export function UserPanel({ quizzes, onLogout, user }) {
     if (user?.id) {
       fetchUserQuizHistory();
     }
-  };
-
-  const calculateScore = () => {
-    const correctAnswers = questionResults.filter(result => result.isCorrect).length;
-    return {
-      correct: correctAnswers,
-      total: questionResults.length,
-      percentage: Math.round((correctAnswers / questionResults.length) * 100)
-    };
   };
 
   // Quiz Code Entry Screen
