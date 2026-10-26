@@ -1,6 +1,27 @@
 const { MongoClient } = require('mongodb');
 
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+/**
+ * Automatically percent-encodes special characters (such as @ in password)
+ * so MongoDB URI parsing doesn't break if raw passwords contain @ or other reserved symbols.
+ */
+function formatMongoUri(rawUri) {
+  if (!rawUri) return rawUri;
+  const match = rawUri.match(/^(mongodb(?:\+srv)?:\/\/)([^:]+):(.*)@([^@]+)$/);
+  if (match) {
+    const [, protocol, username, password, hostAndParams] = match;
+    try {
+      const cleanUsername = encodeURIComponent(decodeURIComponent(username));
+      const cleanPassword = encodeURIComponent(decodeURIComponent(password));
+      return `${protocol}${cleanUsername}:${cleanPassword}@${hostAndParams}`;
+    } catch {
+      return rawUri;
+    }
+  }
+  return rawUri;
+}
+
+const rawUri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const uri = formatMongoUri(rawUri);
 const dbName = process.env.MONGODB_DB_NAME || 'EduAI';
 
 // Warn if deployed without a cloud MongoDB instance
@@ -30,7 +51,7 @@ async function connectToDatabase() {
         const maskedUri = uri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
         console.log(`Connecting to MongoDB at: ${maskedUri}`);
         client = new MongoClient(uri, {
-          serverSelectionTimeoutMS: 5000, // Timeout faster (5s) instead of hanging for 30s
+          serverSelectionTimeoutMS: 5000, // Timeout faster (5s) instead of hanging
         });
         await client.connect();
         db = client.db(dbName);
@@ -68,5 +89,6 @@ module.exports = {
   getDb,
   getClient,
   dbName,
-  uri
+  uri,
+  formatMongoUri
 };
